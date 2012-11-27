@@ -3,6 +3,7 @@ Simple harness for running load tests.
 
 """
 import atexit
+import os
 import threading
 import time
 import traceback
@@ -27,8 +28,11 @@ class TestRunner(object):
         'num_runs' : 1,
         
         # Delay between starting multiple threads (seconds).
-        'stagger_delay' : 0,
-        
+        'start_delay' : 0,
+
+        # Delay between each run in a thread (seconds).
+        'run_delay' : 0,
+
         # Test class is initialsied with test runner options. Must implement a run() method.
         'test_class' : None
     }
@@ -57,9 +61,9 @@ class TestRunner(object):
             
         for thread in threads:
             # Start all tests
-            if options['stagger_delay'] > 0:
+            if options['start_delay'] > 0:
                 # Delay between tests
-                time.sleep(options['stagger_delay'])
+                time.sleep(options['start_delay'])
             thread.start()
             options['log'].debug('Spawned Thread')
     
@@ -71,8 +75,8 @@ class TestRunner(object):
         options = self.options
         options['log'].debug('Finished All Requests')
         out_csv = options['out_file'] or \
-                'results/{0}_{1}_run_{2}_threads_{3}s_stagger.csv'.format(options['test_class'].__name__, options['num_runs'], options['num_threads'], options['stagger_delay'])
-        options['log'].perfcsv(open(out_csv, 'wb'), ['System Time', 'Elapsed Run Time'])
+                'results/{0}_{1}_run_{2}_threads_{3}s_sdelay_{4}s_rdelay.csv'.format(options['test_class'].__name__, options['num_runs'], options['num_threads'], options['start_delay'], options['run_delay'])
+        options['log'].perfcsv(open(out_csv, 'wb+'), ['System Time', 'Elapsed Run Time'])
     
 
 class TestThread(threading.Thread):
@@ -107,6 +111,9 @@ class TestThread(threading.Thread):
                     self.log.perflog((start_time, time.time() - start_timer, self.transaction.latency))
                 else:
                     self.log.perflog((start_time, time.time() - start_timer))
+                if options['run_delay'] > 0:
+                    self.log.debug('Delaying run....')
+                    time.sleep(options['run_delay'])
             except:
                 self.log.debug('Error Running Transaction')    
                 traceback.print_exc()

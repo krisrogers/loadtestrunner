@@ -11,7 +11,8 @@ def main():
     parser.add_argument('--num_threads', default=runner.TestRunner.options['num_threads'], type=int)
     parser.add_argument('--out_file', default=runner.TestRunner.options['out_file'])
     parser.add_argument('--num_runs', default=runner.TestRunner.options['num_runs'], type=int)
-    parser.add_argument('--stagger_delay', default=runner.TestRunner.options['stagger_delay'], type=int)
+    parser.add_argument('--start_delay', default=runner.TestRunner.options['start_delay'], type=int)
+    parser.add_argument('--run_delay', default=runner.TestRunner.options['run_delay'], type=int)
     args = vars(parser.parse_args())
     
     args['test_class'] = SimpleTestTransaction
